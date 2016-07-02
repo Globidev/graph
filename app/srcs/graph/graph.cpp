@@ -21,7 +21,12 @@ namespace graph {
     }
 
     Graph load_from_osm_data(const osm::ParsedData & data) {
-        return { };
+        return {
+            data.edges.cbegin(),
+            data.edges.cend(),
+            // TODO: EdgePropertyIterator => distances ?
+            data.nodes_by_id.size()
+        };
     }
 
     bool save_serialized(const Graph & graph, const std::string & file_name) {
