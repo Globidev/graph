@@ -9,6 +9,14 @@ namespace graph {
         if (!ifs.is_open())
             return boost::none;
 
+        try {
+            archive::binary_iarchive ia { ifs };
+            ia >> graph;
+        }
+        catch(const archive::archive_exception &) {
+            return boost::none;
+        }
+
         return graph;
     }
 
@@ -22,8 +30,13 @@ namespace graph {
         if (!ofs.is_open())
             return false;
 
-        archive::binary_oarchive oa { ofs };
-        oa << graph;
+        try {
+            archive::binary_oarchive oa { ofs };
+            oa << graph;
+        }
+        catch(const archive::archive_exception &) {
+            return false;
+        }
 
         return true;
     }
