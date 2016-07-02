@@ -16,6 +16,7 @@ RUN mkdir ${BOOST_BUILD_DIR} &&\
         --with-libraries=system \
         --with-libraries=date_time \
         --with-libraries=regex \
+        --with-libraries=program_options \
         --with-libraries=serialization &&\
     ./b2 -j4 install > boost.build &&\
     rm -rf ${BOOST_BUILD_DIR}
