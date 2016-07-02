@@ -11,7 +11,15 @@ Application::Application(int argc, char **argv) {
 static auto get_graph() {
     // Load serialized graph
     if (!ProgramOptions::input_file.empty()) {
-        return graph::load_serialized(ProgramOptions::input_file);
+        auto mb_graph = graph::load_serialized(ProgramOptions::input_file);
+        if (mb_graph)
+            return *mb_graph;
+        else {
+            std::cerr << "Unable to load the graph from "
+                      << ProgramOptions::input_file
+                      << std::endl;
+            exit(1);
+        }
     }
     // Generate the graph
     else if (!ProgramOptions::protobuf_file.empty()) {

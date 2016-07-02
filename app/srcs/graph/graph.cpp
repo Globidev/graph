@@ -2,12 +2,12 @@
 
 namespace graph {
 
-    Graph load_serialized(const std::string & file_name) {
+    Maybe<Graph> load_serialized(const std::string & file_name) {
         Graph graph;
         std::ifstream ifs { file_name };
 
-        archive::binary_iarchive ia { ifs };
-        ia >> graph;
+        if (!ifs.is_open())
+            return boost::none;
 
         return graph;
     }

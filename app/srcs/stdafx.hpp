@@ -17,3 +17,6 @@ namespace bgl = boost;
 namespace archive = boost::archive;
 
 #include <boost/property_map/property_map.hpp>
+
+#include <boost/optional.hpp>
+template <class T> using Maybe = boost::optional<T>;
