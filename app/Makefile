@@ -5,19 +5,28 @@ rwildcard       =   $(foreach d,$(wildcard $1*),$(call rwildcard,$d/,$2)\
 
 COMPILER        =   g++
 
+PCH             =   srcs/stdafx.hpp
+PCH_SUFFIX      =   .gch
+PCH_DIR         =   /tmp/pch_$(NAME)
+PCH_TARGET      =   $(PCH_DIR)$(PCH_SUFFIX)/pch
+PCH_FLAG        =   -include $(PCH_DIR)
+PCH_IGN_FLAGS   =   -Wno-deprecated-declarations -Wno-unused-parameter
+
 SRCS_DIR        =   ./srcs
-INCLUDE_DIRS    =   $(BOOST_INCLUDE_DIR)
+INCLUDE_DIRS    =   ./srcs \
+                    $(BOOST_INCLUDE_DIR)
 LIB_DIRS        =   $(BOOST_LIB_DIR)
-LIB_NAMES       =   boost_serialization \
+LIB_NAMES       =   pthread \
                     cppnetlib-server-parsers \
                     cppnetlib-client-connections \
                     cppnetlib-uri \
-                    pthread
+                    boost_program_options \
+                    boost_serialization
 
 CFLAGS          =   -Wall -Wextra -std=c++1z -O3\
                     $(foreach dir, $(INCLUDE_DIRS), -I $(dir))\
                     $(foreach define, $(PP_DEFINES), -D $(define))
-LFLAGS          =   $(foreach dir, $(LIB_DIRS), -L $(dir))\
+LFLAGS          =   -static $(foreach dir, $(LIB_DIRS), -L $(dir))\
                     $(foreach name, $(LIB_NAMES), -l$(name))
 
 OBJ_DIR         =   objs
@@ -27,21 +36,26 @@ OBJS            =   $(addprefix $(OBJ_DIR)/, $(SRCS:.cpp=.o))
 OBJ_SUB_DIRS    =   $(dir $(OBJS))
 
 all: show_fancy_name
-	@$(MAKE) $(NAME)
+	@$(MAKE) --no-print-directory $(NAME)
 
 $(NAME): $(OBJS)
 	@echo "$(bold)$(blue)linking  	$(green)$@$(reset)"
 	@$(COMPILER) $^ $(LFLAGS) -o $@
 	@echo "$(bold)$(green)build    	✓$(reset)"
 
+$(PCH_TARGET): $(PCH)
+	@mkdir -p $(PCH_DIR)$(PCH_SUFFIX)
+	@echo "$(bold)$(cyan)precompiling	$(reset)$(white)$(dir $<)$(bold)$(notdir $<)$(reset)"
+	@$(COMPILER) $(CFLAGS) $(PCH_IGN_FLAGS) $< -o $@
+
 $(OBJS): | $(OBJ_DIR)
 
 $(OBJ_DIR):
 	@$(foreach dir, $(OBJ_SUB_DIRS), mkdir -p $(dir);)
 
-$(OBJ_DIR)/%.o: %.cpp
+$(OBJ_DIR)/%.o: %.cpp $(PCH_TARGET)
 	@echo "$(bold)$(cyan)compiling	$(reset)$(white)$(dir $<)$(bold)$(notdir $<)$(reset)"
-	@$(COMPILER) $(CFLAGS) -c $< -o $@
+	@$(COMPILER) $(CFLAGS) $(PCH_FLAG) -c $< -o $@
 
 depend: .depend
 
@@ -55,14 +69,16 @@ clean: show_fancy_name
 	@echo "$(bold)$(red)cleaning 	$(white)$(OBJ_DIR)$(reset)"
 	@rm -rf $(OBJ_DIR)
 	@rm -f ./.depend
+	@echo "$(bold)$(red)cleaning 	$(white)$(PCH_DIR)$(reset)"
+	@rm -rf $(PCH_DIR)$(PCH_SUFFIX)
 
 fclean: clean
 	@echo "$(bold)$(red)removing 	$(green)$(NAME)$(reset)"
 	@rm -f $(NAME)
 
 re:
-	@$(MAKE) fclean
-	@$(MAKE) all
+	@$(MAKE) --no-print-directory fclean
+	@$(MAKE) --no-print-directory all
 
 show_fancy_name:
 	@echo "\n$(bold)$(yellow)building 	$(NAME)$(reset)"
