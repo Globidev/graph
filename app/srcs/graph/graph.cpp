@@ -25,7 +25,7 @@ namespace graph {
             data.edges.cbegin(),
             data.edges.cend(),
             // TODO: EdgePropertyIterator => distances ?
-            data.nodes_by_id.size()
+            data.nodes.size()
         };
     }
 
