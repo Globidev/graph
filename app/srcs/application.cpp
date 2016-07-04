@@ -11,6 +11,8 @@ Application::Application(int argc, char **argv) {
 static auto get_graph() {
     // Load serialized graph
     if (!ProgramOptions::input_file.empty()) {
+        std::cout << "Loading serialized graph..." << std::endl;
+
         auto mb_graph = graph::load_serialized(ProgramOptions::input_file);
         if (mb_graph)
             return *mb_graph;
@@ -23,8 +25,10 @@ static auto get_graph() {
     }
     // Generate the graph
     else if (!ProgramOptions::protobuf_file.empty()) {
+        std::cout << "Loading protobuf data..." << std::endl;
         auto osm_data = osm::load_protobuf(ProgramOptions::protobuf_file);
 
+        std::cout << "Building graph..." << std::endl;
         return graph::load_from_osm_data(osm_data);
     }
     // Error
@@ -39,6 +43,8 @@ void Application::run() {
 
     // Save the graph and exit
     if(!ProgramOptions::output_file.empty()) {
+        std::cout << "Saving graph to " << ProgramOptions::output_file
+                  << "..." << std::endl;
         if (graph::save_serialized(graph, ProgramOptions::output_file)) {
             std::cout << "Graph successfully saved to "
                       << ProgramOptions::output_file
