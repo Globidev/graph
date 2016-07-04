@@ -31,7 +31,7 @@ CFLAGS          =   -Wall -Wextra -std=c++1z -O3\
                     -Wno-maybe-uninitialized\
                     $(foreach dir, $(INCLUDE_DIRS), -I $(dir))\
                     $(foreach define, $(PP_DEFINES), -D $(define))
-LFLAGS          =   -static $(foreach dir, $(LIB_DIRS), -L $(dir))\
+LFLAGS          =   $(foreach dir, $(LIB_DIRS), -L $(dir))\
                     $(foreach name, $(LIB_NAMES), -l$(name))
 
 OBJ_DIR         =   objs
