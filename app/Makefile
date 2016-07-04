@@ -17,8 +17,7 @@ INCLUDE_DIRS    =   ./srcs \
                     $(BOOST_INCLUDE_DIR) \
                     $(OSMIUM_INCLUDE_DIR)
 LIB_DIRS        =   $(BOOST_LIB_DIR)
-LIB_NAMES       =   pthread \
-                    cppnetlib-server-parsers \
+LIB_NAMES       =   cppnetlib-server-parsers \
                     cppnetlib-client-connections \
                     cppnetlib-uri \
                     boost_program_options \
@@ -32,7 +31,9 @@ CFLAGS          =   -Wall -Wextra -std=c++1z -O3\
                     $(foreach dir, $(INCLUDE_DIRS), -I $(dir))\
                     $(foreach define, $(PP_DEFINES), -D $(define))
 LFLAGS          =   $(foreach dir, $(LIB_DIRS), -L $(dir))\
-                    $(foreach name, $(LIB_NAMES), -l$(name))
+                    $(foreach name, $(LIB_NAMES), -l$(name))\
+                    -static \
+                    -Wl,--whole-archive -lpthread -Wl,--no-whole-archive # see https://gcc.gnu.org/bugzilla/show_bug.cgi?id=52590
 
 OBJ_DIR         =   objs
 SRCS            =   $(call rwildcard, $(SRCS_DIR), *.cpp)
