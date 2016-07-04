@@ -36,5 +36,26 @@ RUN mkdir ${CPP_NETLIB_SRC_DIR} ${CPP_NETLIB_BUILD_DIR} &&\
     rm -rf ${CPP_NETLIB_SRC_DIR} ${CPP_NETLIB_BUILD_DIR}
     # see https://groups.google.com/forum/#!topic/cpp-netlib/0g4aRaREco8
 
-# ADD . /src
-# WORKDIR /src
+# osmium
+ENV OSMIUM_ARCHIVE_URL  https://github.com/osmcode/libosmium/archive/v2.7.2.tar.gz
+ENV OSMIUM_SRC_DIR      /osmium
+ENV OSMIUM_INCLUDE_DIR  ${OSMIUM_SRC_DIR}/include
+
+RUN mkdir ${OSMIUM_SRC_DIR} &&\
+    curl -L ${OSMIUM_ARCHIVE_URL} | tar xz --strip-components=1 -C ${OSMIUM_SRC_DIR}
+
+# inotifywait dependencies
+RUN apt-get update -y && apt-get install -y \
+    inotify-tools
+
+# Hardplacing the default script in the image
+ADD watch.sh /scripts/watch.sh
+
+# User specific configuration
+ARG UID=1000
+ARG USER=docker
+RUN id ${USER} || useradd -u ${UID} -m ${USER}
+
+WORKDIR /app
+
+CMD ["/scripts/watch.sh"]

@@ -20,3 +20,8 @@ namespace archive = boost::archive;
 
 #include <boost/optional.hpp>
 template <class T> using Maybe = boost::optional<T>;
+
+// Osmium
+#include <osmium/handler.hpp>
+#include <osmium/visitor.hpp>
+#include <osmium/io/any_input.hpp>

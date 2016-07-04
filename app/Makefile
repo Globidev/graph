@@ -14,14 +14,18 @@ PCH_IGN_FLAGS   =   -Wno-deprecated-declarations -Wno-unused-parameter
 
 SRCS_DIR        =   ./srcs
 INCLUDE_DIRS    =   ./srcs \
-                    $(BOOST_INCLUDE_DIR)
+                    $(BOOST_INCLUDE_DIR) \
+                    $(OSMIUM_INCLUDE_DIR)
 LIB_DIRS        =   $(BOOST_LIB_DIR)
 LIB_NAMES       =   pthread \
                     cppnetlib-server-parsers \
                     cppnetlib-client-connections \
                     cppnetlib-uri \
                     boost_program_options \
-                    boost_serialization
+                    boost_serialization \
+                    z \
+                    bz2 \
+                    expat
 
 CFLAGS          =   -Wall -Wextra -std=c++1z -O3\
                     -Wno-maybe-uninitialized\
