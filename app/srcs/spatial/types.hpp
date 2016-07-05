@@ -8,4 +8,8 @@ namespace spatial {
         bgeo::cs::spherical_equatorial<bgeo::degree>
     >;
 
+    using Index = bgi::rtree<
+        std::pair<Coordinates, uint>,
+        bgi::rstar<16>
+    >;
 }

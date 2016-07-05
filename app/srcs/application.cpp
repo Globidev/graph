@@ -38,6 +38,27 @@ static auto get_graph() {
     }
 }
 
+static auto get_spatial_index(graph::Graph & graph) {
+    std::vector<spatial::Index::value_type> coordinates;
+    graph::Graph::vertex_iterator it, end;
+
+    auto coordinates_map = bgl::get(graph::coordinates_t { }, graph);
+    boost::tie(it, end) = bgl::vertices(graph);
+    coordinates.reserve(bgl::num_vertices(graph));
+
+    std::transform(
+        it,
+        end,
+        std::back_inserter(coordinates),
+        [&](auto v) { return std::make_pair(coordinates_map[v], v); }
+    );
+
+    // Using boost packing algorithm to bulk load the rtree
+    return spatial::Index {
+        coordinates
+    };
+}
+
 void Application::run() {
     auto graph = get_graph();
 
@@ -61,4 +82,6 @@ void Application::run() {
             exit(1);
         }
     }
+
+    auto spatial_index = get_spatial_index(graph);
 }

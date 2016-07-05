@@ -13,8 +13,10 @@ namespace po = boost::program_options;
 namespace bgl = boost;
 
 #include <boost/geometry.hpp>
-#include <boost/geometry/index/detail/serialization.hpp>
 namespace bgeo = boost::geometry;
+#include <boost/geometry/index/rtree.hpp>
+#include <boost/geometry/index/detail/serialization.hpp>
+namespace bgi = boost::geometry::index;
 
 #include <boost/archive/binary_iarchive.hpp>
 #include <boost/archive/binary_oarchive.hpp>
