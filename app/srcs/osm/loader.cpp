@@ -61,9 +61,22 @@ namespace osm {
                 nodes.begin(),
                 std::back_inserter(raw_edges),
                 [](auto & n2, auto & n1) {
-                    return std::make_pair(n2.ref(), n1.ref());
+                    return std::make_pair(n1.ref(), n2.ref());
                 }
             );
+
+            auto one_way = tags["oneway"];
+            if(!one_way || strcmp(one_way, "yes") != 0) {
+                std::transform(
+                    std::next(nodes.begin()),
+                    nodes.end(),
+                    nodes.begin(),
+                    std::back_inserter(raw_edges),
+                    [](auto & n2, auto & n1) {
+                        return std::make_pair(n2.ref(), n1.ref());
+                    }
+                );
+            }
         }
 
     private:
