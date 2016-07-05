@@ -10,14 +10,39 @@ namespace osm {
             data_ { data }
         { }
 
+        ~Visitor() {
+            uint count = 0;
+            std::unordered_map<NodeId, uint> node_id_map;
+
+            // Mapping node ids to a sequence
+            for (const auto & edge: raw_edges) {
+                if (!node_id_map.count(edge.first))
+                    node_id_map.emplace(edge.first, count++);
+                if (!node_id_map.count(edge.second))
+                    node_id_map.emplace(edge.second, count++);
+            }
+
+            // Building the edge vector
+            for (const auto & edge: raw_edges)
+                data_.edges.emplace_back(
+                    node_id_map[edge.first],
+                    node_id_map[edge.second]
+                );
+
+            // // Building the node vector
+            data_.nodes.resize(count);
+            for (const auto & pair: node_id_map)
+                data_.nodes[pair.second] = nodes_by_id[pair.first];
+        }
+
         void node(osmium::Node & node) {
-            data_.nodes.emplace_back(
-                node.location().lat(),
-                node.location().lon()
-            );
             nodes_by_id.emplace(
-                node.id(),
-                data_.nodes.size() - 1
+                std::piecewise_construct,
+                std::forward_as_tuple(node.id()),
+                std::forward_as_tuple(
+                    node.location().lat(),
+                    node.location().lon()
+                )
             );
         }
 
@@ -29,35 +54,38 @@ namespace osm {
                 return ;
 
             auto & nodes = way.nodes();
+
             std::transform(
                 std::next(nodes.begin()),
                 nodes.end(),
                 nodes.begin(),
-                std::back_inserter(data_.edges),
-                [this](auto n2, auto n1) {
-                    return std::make_pair(
-                        nodes_by_id[n1.ref()],
-                        nodes_by_id[n2.ref()]
-                    );
+                std::back_inserter(raw_edges),
+                [](auto & n2, auto & n1) {
+                    return std::make_pair(n2.ref(), n1.ref());
                 }
             );
         }
 
     private:
-        using NodesById = std::unordered_map<NodeId, uint>;
+        using NodesById = std::unordered_map<NodeId, spatial::Coordinates>;
+
+        std::vector<std::pair<NodeId, NodeId>> raw_edges;
+        NodesById nodes_by_id;
 
         ParsedData & data_;
-        NodesById nodes_by_id;
     };
 
     ParsedData load_protobuf(const std::string & file_name) {
         ParsedData data;
-        Visitor v { data };
 
         osmium::io::File ifs { file_name };
         osmium::io::Reader reader { ifs };
 
-        osmium::apply(reader, v);
+        {
+            Visitor v { data };
+            osmium::apply(reader, v);
+        }
+
         reader.close();
 
         return data;
