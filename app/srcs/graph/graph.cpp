@@ -37,6 +37,7 @@ namespace graph {
         Graph::edge_iterator it, end;
         boost::tie(it, end) = bgl::edges(graph);
         for (; it != end; ++it) {
+            // TODO: adjust distance
             weights[*it] = bgeo::distance(
                 data.nodes[bgl::source(*it, graph)],
                 data.nodes[bgl::target(*it, graph)]

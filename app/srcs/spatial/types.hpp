@@ -5,7 +5,7 @@ namespace spatial {
     using Coordinates = bgeo::model::point<
         double,
         2,
-        bgeo::cs::geographic<bgeo::degree>
+        bgeo::cs::spherical_equatorial<bgeo::degree>
     >;
 
 }
