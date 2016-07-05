@@ -4,8 +4,18 @@
 
 namespace graph {
 
-    using VertexProperties = boost::no_property; // TODO: store coordinates ?
-    using EdgeProperties = boost::no_property; // TODO: store distances ?
+    struct coordinates_t {
+        using kind = bgl::vertex_property_tag;
+    };
+
+    using VertexProperties = boost::property<
+        coordinates_t,
+        spatial::Coordinates
+    >;
+    using EdgeProperties = boost::property<
+        bgl::edge_weight_t,
+        double
+    >;
 
     using Graph = bgl::adjacency_list<
         bgl::listS,
