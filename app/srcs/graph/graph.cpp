@@ -21,12 +21,29 @@ namespace graph {
     }
 
     Graph load_from_osm_data(const osm::ParsedData & data) {
-        return {
+        Graph graph {
             data.edges.cbegin(),
             data.edges.cend(),
-            // TODO: EdgePropertyIterator => distances ?
             data.nodes.size()
         };
+
+        // Add vertex properties (coordinates)
+        auto coordinates = bgl::get(coordinates_t { }, graph);
+        for (uint i = 0; i < data.nodes.size(); ++i)
+            coordinates[i] = data.nodes[i];
+
+        // Add edge properties (distances)
+        auto weights = bgl::get(bgl::edge_weight_t { }, graph);
+        Graph::edge_iterator it, end;
+        boost::tie(it, end) = bgl::edges(graph);
+        for (; it != end; ++it) {
+            weights[*it] = bgeo::distance(
+                data.nodes[bgl::source(*it, graph)],
+                data.nodes[bgl::target(*it, graph)]
+            );
+        }
+
+        return graph;
     }
 
     bool save_serialized(const Graph & graph, const std::string & file_name) {
