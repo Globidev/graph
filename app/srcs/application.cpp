@@ -41,6 +41,9 @@ static auto get_graph() {
 void Application::run() {
     auto graph = get_graph();
 
+    std::cout << "Using " << bgl::num_vertices(graph) << " vertices"
+              << " and " << bgl::num_edges(graph) << " edges" << std::endl;
+
     // Save the graph and exit
     if(!ProgramOptions::output_file.empty()) {
         std::cout << "Saving graph to " << ProgramOptions::output_file
