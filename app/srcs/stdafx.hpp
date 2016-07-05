@@ -12,6 +12,10 @@ namespace po = boost::program_options;
 #include <boost/graph/dijkstra_shortest_paths.hpp>
 namespace bgl = boost;
 
+#include <boost/geometry.hpp>
+#include <boost/geometry/index/detail/serialization.hpp>
+namespace bgeo = boost::geometry;
+
 #include <boost/archive/binary_iarchive.hpp>
 #include <boost/archive/binary_oarchive.hpp>
 namespace archive = boost::archive;
