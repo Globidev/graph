@@ -33,7 +33,7 @@ namespace graph {
             coordinates[i] = data.nodes[i];
 
         // Add edge properties (distances)
-        auto weights = bgl::get(bgl::edge_weight_t { }, graph);
+        auto weights = bgl::get(bgl::edge_weight, graph);
         Graph::edge_iterator it, end;
         boost::tie(it, end) = bgl::edges(graph);
         for (; it != end; ++it) {
