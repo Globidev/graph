@@ -40,8 +40,8 @@ namespace osm {
                 std::piecewise_construct,
                 std::forward_as_tuple(node.id()),
                 std::forward_as_tuple(
-                    node.location().lat(),
-                    node.location().lon()
+                    node.location().lon(),
+                    node.location().lat()
                 )
             );
         }
