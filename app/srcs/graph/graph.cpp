@@ -1,5 +1,7 @@
 #include "graph.hpp"
 
+#include "spatial/constants.hpp"
+
 namespace graph {
 
     Maybe<Graph> load_serialized(const std::string & file_name) {
@@ -37,11 +39,11 @@ namespace graph {
         Graph::edge_iterator it, end;
         boost::tie(it, end) = bgl::edges(graph);
         for (; it != end; ++it) {
-            // TODO: adjust distance
-            weights[*it] = bgeo::distance(
+            auto distance = bgeo::distance(
                 data.nodes[bgl::source(*it, graph)],
                 data.nodes[bgl::target(*it, graph)]
             );
+            weights[*it] = distance * spatial::EARTH_RADIUS;
         }
 
         return graph;
