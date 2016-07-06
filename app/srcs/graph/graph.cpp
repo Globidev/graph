@@ -22,7 +22,78 @@ namespace graph {
         return graph;
     }
 
-    Graph load_from_osm_data(const osm::ParsedData & data) {
+    struct VertexVisitor: bgl::base_visitor<VertexVisitor> {
+        using event_filter = bgl::on_discover_vertex;
+        using Visited = std::set<uint>;
+
+        VertexVisitor(Visited & visited):
+            visited_ { visited }
+        { }
+
+        void operator()(auto s, auto &) {
+            visited_.emplace(s);
+        }
+
+        Visited & visited_;
+    };
+
+    auto connected_nodes(const osm::ParsedData & data) {
+        Graph graph {
+            data.edges.cbegin(),
+            data.edges.cend(),
+            data.nodes.size()
+        };
+
+        VertexVisitor::Visited visited;
+        VertexVisitor visitor { visited };
+
+        auto start = bgl::vertex(0, graph); // TODO: let users pick a reference
+                                            // vertex ?
+        bgl::breadth_first_search(
+            graph,
+            start,
+            bgl::visitor(make_bfs_visitor(visitor))
+        );
+
+        return visited;
+    }
+
+    static auto stripped_osm_data(const osm::ParsedData & data) {
+        auto connected = connected_nodes(data);
+
+        osm::ParsedData stripped;
+        std::unordered_map<uint, uint> node_index_map;
+
+        // Removing unconnected nodes and mapping their new indexes
+        uint count = 0;
+        for (uint i = 0; i < data.nodes.size(); ++i) {
+            if (connected.count(i)) {
+                stripped.nodes.emplace_back(std::move(data.nodes[i]));
+                node_index_map.emplace(i, count++);
+            }
+        }
+
+        // Removing unconnected edges and remapping node indexes
+        for (const auto & edge: data.edges) {
+            auto start_it = node_index_map.find(edge.first);
+            auto end_it = node_index_map.find(edge.second);
+
+            if (start_it != node_index_map.end()
+                && end_it != node_index_map.end()) {
+
+                stripped.edges.emplace_back(
+                    start_it->second,
+                    end_it->second
+                );
+            }
+        }
+
+        return stripped;
+    }
+
+    Graph load_from_osm_data(const osm::ParsedData & raw_data) {
+        auto data = stripped_osm_data(raw_data);
+
         Graph graph {
             data.edges.cbegin(),
             data.edges.cend(),
