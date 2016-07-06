@@ -22,6 +22,23 @@ namespace graph {
         return graph;
     }
 
+    bool save_serialized(const Graph & graph, const std::string & file_name) {
+        std::ofstream ofs { file_name };
+
+        if (!ofs.is_open())
+            return false;
+
+        try {
+            archive::binary_oarchive oa { ofs };
+            oa << graph;
+        }
+        catch(const archive::archive_exception &) {
+            return false;
+        }
+
+        return true;
+    }
+
     struct VertexVisitor: bgl::base_visitor<VertexVisitor> {
         using event_filter = bgl::on_discover_vertex;
         using Visited = std::set<uint>;
@@ -118,23 +135,6 @@ namespace graph {
         }
 
         return graph;
-    }
-
-    bool save_serialized(const Graph & graph, const std::string & file_name) {
-        std::ofstream ofs { file_name };
-
-        if (!ofs.is_open())
-            return false;
-
-        try {
-            archive::binary_oarchive oa { ofs };
-            oa << graph;
-        }
-        catch(const archive::archive_exception &) {
-            return false;
-        }
-
-        return true;
     }
 
 }

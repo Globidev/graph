@@ -38,7 +38,24 @@ static auto get_graph() {
     }
 }
 
-static auto get_spatial_index(graph::Graph & graph) {
+static void save_graph_and_exit(const graph::Graph & graph) {
+    std::cout << "Saving graph to " << ProgramOptions::output_file
+              << "..." << std::endl;
+    if (graph::save_serialized(graph, ProgramOptions::output_file)) {
+        std::cout << "Graph successfully saved to "
+                  << ProgramOptions::output_file
+                  << std::endl;
+        exit(0);
+    }
+    else {
+        std::cerr << "Unable to save the graph to "
+                  << ProgramOptions::output_file
+                  << std::endl;
+        exit(1);
+    }
+}
+
+static auto build_spatial_index(graph::Graph & graph) {
     std::vector<spatial::Index::value_type> coordinates;
     graph::Graph::vertex_iterator it, end;
 
@@ -65,23 +82,11 @@ void Application::run() {
     std::cout << "Using " << bgl::num_vertices(graph) << " vertices"
               << " and " << bgl::num_edges(graph) << " edges" << std::endl;
 
-    // Save the graph and exit
-    if(!ProgramOptions::output_file.empty()) {
-        std::cout << "Saving graph to " << ProgramOptions::output_file
-                  << "..." << std::endl;
-        if (graph::save_serialized(graph, ProgramOptions::output_file)) {
-            std::cout << "Graph successfully saved to "
-                      << ProgramOptions::output_file
-                      << std::endl;
-            exit(0);
-        }
-        else {
-            std::cerr << "Unable to save the graph to "
-                      << ProgramOptions::output_file
-                      << std::endl;
-            exit(1);
-        }
-    }
+    if(!ProgramOptions::output_file.empty())
+        save_graph_and_exit(graph);
 
-    auto spatial_index = get_spatial_index(graph);
+    std::cout << "Building a spatial index..." << std::endl;
+
+    auto spatial_index = build_spatial_index(graph);
+
 }

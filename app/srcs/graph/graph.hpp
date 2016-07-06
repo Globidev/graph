@@ -25,8 +25,8 @@ namespace graph {
         EdgeProperties
     >;
 
+    bool save_serialized(const Graph & graph, const std::string & file_name);
     Maybe<Graph> load_serialized(const std::string & file_name);
     Graph load_from_osm_data(const osm::ParsedData & data);
 
-    bool save_serialized(const Graph & graph, const std::string & file_name);
 }
