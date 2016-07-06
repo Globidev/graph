@@ -29,4 +29,14 @@ namespace graph {
     Maybe<Graph> load_serialized(const std::string & file_name);
     Graph load_from_osm_data(const osm::ParsedData & data);
 
+    struct Route {
+        using Steps = std::vector<spatial::Coordinates>;
+
+        double distance;
+        Steps steps;
+    };
+
+    Maybe<Route> get_route(const spatial::Coordinates & origin,
+                           const spatial::Coordinates & destination,
+                           const spatial::Index & index, const Graph & graph);
 }

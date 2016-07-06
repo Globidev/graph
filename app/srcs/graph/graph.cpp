@@ -137,4 +137,98 @@ namespace graph {
         return graph;
     }
 
+    static auto nearest_vertex(const spatial::Coordinates & coords,
+                               const spatial::Index & index) {
+        Graph::vertex_descriptor vertex;
+
+        bgi::query(
+            index,
+            bgi::nearest(coords, 1),
+            boost::make_function_output_iterator([&vertex](const auto & node) {
+                vertex = node.second;
+            })
+        );
+
+        return vertex;
+    }
+
+    struct RouteVisitor: bgl::base_visitor<RouteVisitor> {
+        using event_filter = bgl::on_examine_vertex;
+
+        struct DestinationReached { };
+
+        RouteVisitor(Graph::vertex_descriptor destination):
+            destination_ { destination }
+        { }
+
+        void operator()(auto vertex, auto &) {
+            if (vertex == destination_)
+                throw DestinationReached { };
+        }
+
+        Graph::vertex_descriptor destination_;
+    };
+
+    using Predecessors = std::vector<graph::Graph::vertex_descriptor>;
+
+    static auto backtrack(const Predecessors & predecessors,
+                          Graph::vertex_descriptor end, const Graph & graph) {
+        Route::Steps steps;
+        Graph::vertex_descriptor it, previous;
+
+        auto coordinates = bgl::get(coordinates_t { }, graph);
+        previous = end;
+        do {
+            it = previous;
+            steps.emplace_back(coordinates[it]);
+            previous = predecessors[it];
+        } while (previous != it);
+
+        std::reverse(steps.begin(), steps.end());
+
+        return steps;
+    }
+
+    Maybe<Route> get_route(const spatial::Coordinates & origin,
+                           const spatial::Coordinates & destination,
+                           const spatial::Index & index, const Graph & graph) {
+        using Distances = std::vector<double>;
+
+        auto origin_v = nearest_vertex(origin, index);
+        auto destination_v = nearest_vertex(destination, index);
+
+        Distances vertex_distances(bgl::num_vertices(graph));
+        Predecessors predecessors(bgl::num_vertices(graph));
+
+        auto vertex_indexes = bgl::get(boost::vertex_index, graph);
+        auto distance_map = boost::make_iterator_property_map(
+            vertex_distances.begin(),
+            vertex_indexes
+        );
+        auto predecessor_map = boost::make_iterator_property_map(
+            predecessors.begin(),
+            vertex_indexes
+        );
+
+        try {
+            bgl::dijkstra_shortest_paths(
+                graph,
+                origin_v,
+                bgl::predecessor_map(predecessor_map).
+                distance_map(distance_map).
+                visitor(
+                    bgl::make_dijkstra_visitor(RouteVisitor { destination_v })
+                )
+            );
+        }
+        catch (const RouteVisitor::DestinationReached &) {
+            return Route {
+                vertex_distances[destination_v],
+                backtrack(predecessors, destination_v, graph)
+            };
+        }
+
+        return boost::none;
+    }
+
 }

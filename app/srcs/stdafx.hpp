@@ -27,6 +27,8 @@ namespace archive = boost::archive;
 #include <boost/optional.hpp>
 template <class T> using Maybe = boost::optional<T>;
 
+#include <boost/function_output_iterator.hpp>
+
 // Osmium
 #include <osmium/handler.hpp>
 #include <osmium/visitor.hpp>
