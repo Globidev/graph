@@ -1,8 +1,8 @@
 #include "application.hpp"
 
 #include "options/program_options.hpp"
-
 #include "graph/graph.hpp"
+#include "web/application.hpp"
 
 Application::Application(int argc, char **argv) {
     ProgramOptions::parse_from_command_line(argc, argv);
@@ -89,6 +89,13 @@ void Application::run() {
 
     auto spatial_index = build_spatial_index(graph);
 
+    std::cout << "Starting up the web server..." << std::endl;
 
+    web::Application web_app {
+        graph,
         spatial_index,
+        ProgramOptions::web_server_port
+    };
+
+    web_app.run();
 }
