@@ -36,7 +36,7 @@ namespace graph {
         Steps steps;
     };
 
-    Maybe<Route> get_route(const spatial::Coordinates & origin,
-                           const spatial::Coordinates & destination,
-                           const spatial::Index & index, const Graph & graph);
+    Maybe<Route> get_route(Graph::vertex_descriptor origin_v,
+                           Graph::vertex_descriptor destination_v,
+                           const Graph &);
 }

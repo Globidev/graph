@@ -137,21 +137,6 @@ namespace graph {
         return graph;
     }
 
-    static auto nearest_vertex(const spatial::Coordinates & coords,
-                               const spatial::Index & index) {
-        Graph::vertex_descriptor vertex;
-
-        bgi::query(
-            index,
-            bgi::nearest(coords, 1),
-            boost::make_function_output_iterator([&vertex](const auto & node) {
-                vertex = node.second;
-            })
-        );
-
-        return vertex;
-    }
-
     struct RouteVisitor: bgl::base_visitor<RouteVisitor> {
         using event_filter = bgl::on_examine_vertex;
 
@@ -189,13 +174,10 @@ namespace graph {
         return steps;
     }
 
-    Maybe<Route> get_route(const spatial::Coordinates & origin,
-                           const spatial::Coordinates & destination,
-                           const spatial::Index & index, const Graph & graph) {
+    Maybe<Route> get_route(Graph::vertex_descriptor origin_v,
+                           Graph::vertex_descriptor destination_v,
+                           const Graph & graph) {
         using Distances = std::vector<double>;
-
-        auto origin_v = nearest_vertex(origin, index);
-        auto destination_v = nearest_vertex(destination, index);
 
         Distances vertex_distances(bgl::num_vertices(graph));
         Predecessors predecessors(bgl::num_vertices(graph));

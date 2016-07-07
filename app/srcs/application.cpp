@@ -76,8 +76,6 @@ static auto build_spatial_index(graph::Graph & graph) {
     };
 }
 
-#include "tools/benchmark.hpp"
-
 void Application::run() {
     auto graph = get_graph();
 
@@ -91,13 +89,6 @@ void Application::run() {
 
     auto spatial_index = build_spatial_index(graph);
 
-    std::cout << "Dijkstra..." << std::endl;
 
-    Benchmark b { "Dijkstra" };
-    auto route = get_route(
-        { 2.3653761, 48.8663557 },
-        { 2.305031, 48.870813 },
         spatial_index,
-        graph
-    );
 }
