@@ -1,8 +1,12 @@
+// Silicon
+#include <silicon/api.hh>
+#include <silicon/backends/mhd.hh>
+
 #include "application.hpp"
 
-namespace web {
+#include "symbols.hh"
 
-    using Server = Handler::Server;
+namespace web {
 
     Application::Application(const graph::Graph & graph,
                              const spatial::Index & index, ushort port):
@@ -10,25 +14,32 @@ namespace web {
     { }
 
     void Application::run() {
-        Handler handler;
-        Server::options options { handler };
+        using namespace sl; // Silicon namespace
+        using namespace s; // Symbols namespace
 
-        Server server {
-            options.
-            address("0.0.0.0").
-            port(std::to_string(port_))
-        };
+        auto route_api = http_api(
+
+            GET / _route
+                * get_parameters(
+                    _olat = double { },
+                    _olng = double { },
+                    _dlat = double { },
+                    _dlng = double { }
+                )
+                = [](auto p) {
+                    return D(
+                        _olat = p.olat,
+                        _olng = p.olng,
+                        _dlat = p.dlat,
+                        _dlng = p.dlng
+                    );
+                }
+
+        );
 
         std::cout << "Listening on " << port_ << std::endl;
 
-        server.run();
+        sl::mhd_json_serve(route_api, port_);
     }
 
-    void Handler::operator()(const Server::request & request,
-                             Server::connection_ptr connection) {
-        std::ostringstream data;
-
-        data << "Hello, World!";
-        connection->write(data.str());
-    }
 }

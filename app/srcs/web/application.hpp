@@ -19,10 +19,4 @@ namespace web {
         ushort port_;
     };
 
-    struct Handler {
-        using Server = http::server<Handler>;
-
-        void operator()(const Server::request &, Server::connection_ptr);
-    };
-
 }

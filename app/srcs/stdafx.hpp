@@ -33,7 +33,3 @@ template <class T> using Maybe = boost::optional<T>;
 #include <osmium/handler.hpp>
 #include <osmium/visitor.hpp>
 #include <osmium/io/any_input.hpp>
-
-// cpp-netlib
-#include <boost/network/protocol/http/server.hpp>
-namespace http = boost::network::http;

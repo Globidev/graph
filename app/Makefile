@@ -15,19 +15,27 @@ PCH_IGN_FLAGS   =   -Wno-deprecated-declarations -Wno-unused-parameter
 SRCS_DIR        =   ./srcs
 INCLUDE_DIRS    =   ./srcs \
                     $(BOOST_INCLUDE_DIR) \
-                    $(OSMIUM_INCLUDE_DIR)
-LIB_DIRS        =   $(BOOST_LIB_DIR)
-LIB_NAMES       =   cppnetlib-server-parsers \
-                    cppnetlib-client-connections \
-                    cppnetlib-uri \
-                    boost_program_options \
+                    $(OSMIUM_INCLUDE_DIR) \
+                    $(SILICON_INCLUDE_DIR) \
+                    $(MICROHTTPD_INCLUDE_DIR)
+LIB_DIRS        =   $(BOOST_LIB_DIR) \
+                    $(MICROHTTPD_LIB_DIR)
+LIB_NAMES       =   boost_program_options \
                     boost_serialization \
+                    microhttpd \
                     z \
                     bz2 \
                     expat
 
+IOD_GEN         =   $(SILICON_PREFIX_DIR)/bin/iod_generate_symbols
+SILICON_SYMBOLS =   $(SRCS_DIR)/web/symbols.hh
+SILICON_SRCS    =   $(call rwildcard, $(SRCS_DIR)/web/, *.cpp)
+
 CFLAGS          =   -Wall -Wextra -std=c++1z -O3\
                     -Wno-maybe-uninitialized\
+                    -Wno-unused-parameter\
+                    -Wno-unused-variable\
+                    -Wno-sign-compare\
                     $(foreach dir, $(INCLUDE_DIRS), -I $(dir))\
                     $(foreach define, $(PP_DEFINES), -D $(define))
 LFLAGS          =   $(foreach dir, $(LIB_DIRS), -L $(dir))\
@@ -41,13 +49,17 @@ OBJS            =   $(addprefix $(OBJ_DIR)/, $(SRCS:.cpp=.o))
 
 OBJ_SUB_DIRS    =   $(dir $(OBJS))
 
-all: show_fancy_name
+all: show_fancy_name $(SILICON_SYMBOLS)
 	@$(MAKE) --no-print-directory $(NAME)
 
 $(NAME): $(OBJS)
 	@echo "$(bold)$(blue)linking  	$(green)$@$(reset)"
 	@$(COMPILER) $^ $(LFLAGS) -o $@
 	@echo "$(bold)$(green)build    	✓$(reset)"
+
+$(SILICON_SYMBOLS): $(SILICON_SRCS)
+	@echo "$(bold)$(cyan)generating 	$(reset)$(white)$(dir $@)$(bold)$(notdir $@)$(reset)"
+	@$(IOD_GEN) $^ $@
 
 $(PCH_TARGET): $(PCH)
 	@mkdir -p $(PCH_DIR)$(PCH_SUFFIX)
