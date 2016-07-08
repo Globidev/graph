@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>nav-route</title>
+  <script src="https://maps.googleapis.com/maps/api/js?v=3.exp&libraries=places"></script>
+  <script src="https://code.jquery.com/jquery-2.1.3.min.js"></script>
+  <style>
+    #panel{
+      position: absolute;
+      z-index: 1;
+      background: rgba(255, 255, 255, 0.73);
+      padding: 15px;
+      border-radius: 5px;
+      border: 1px solid #A3A3A9
+    }
+    html, body, #map-canvas {
+      height: 100%;
+      padding: 0px
+    }
+    .addr {
+      min-width: 400px;
+    }
+    #distance {
+      margin-top: 10px;
+    }
+    </style>
+  <script>
+    var geocoder;
+      var map;
+      function initialize() {
+        geocoder = new google.maps.Geocoder();
+        var latlng = new google.maps.LatLng(48.860193,2.341032);
+        var mapOptions = {
+          zoom: 11,
+          center: latlng
+        }
+        map = new google.maps.Map(document.getElementById('map-canvas'), mapOptions);
+        var start_autocomplete = new google.maps.places.Autocomplete(document.getElementById('start_address'));
+        var end_autocomplete = new google.maps.places.Autocomplete(document.getElementById('end_address'));
+      }
+      function codeAddresses() {
+        var start_address = document.getElementById('start_address').value;
+        var end_address = document.getElementById('end_address').value;
+        geocoder.geocode( { 'address': start_address }, function(start_results, start_status) {
+          if (start_status == google.maps.GeocoderStatus.OK) {
+            geocoder.geocode( { 'address': end_address }, function(end_results, end_status) {
+              if (end_status == google.maps.GeocoderStatus.OK) {
+                askRoute(
+                  start_results[0].geometry.location,
+                  end_results[0].geometry.location
+                )
+                map.setCenter(start_results[0].geometry.location);
+              }
+            })
+          }
+        })
+      }
+      function askRoute(start, end) {
+        var payload = {
+          olat     : start.lat(),
+          olng     : start.lng(),
+          dlat     : end.lat(),
+          dlng     : end.lng()
+        };
+        $.get(
+          "/route",
+          payload,
+          function(raw) {
+            data = JSON.parse(raw);
+            var lines = [];
+            var steps = data.route.steps;
+            for (var i = 0; i < steps.length; ++i) {
+              var leg = steps[i];
+              lines.push(new google.maps.LatLng(leg.latitude, leg.longitude));
+            }
+            // console.log(lines)
+            var path = new google.maps.Polyline({
+              path: lines,
+              geodesic: true,
+              strokeColor: '#FF0000',
+              strokeOpacity: 1.0,
+              strokeWeight: 2
+            });
+            path.setMap(map);
+
+            $("#distance").text(data.route.distance + " km")
+          }
+        )
+      }
+      google.maps.event.addDomListener(window, 'load', initialize);
+  </script>
+
+</head>
+<body>
+  <div id="panel">
+    From: <input id="start_address" type="textbox" value="Paris" class="addr">
+    To: <input id="end_address" type="textbox" value="Paris" class="addr">
+    <input type="button" value="Gogo" onclick="codeAddresses()">
+    <div id="distance"></div>
+    <div id="duration"></div>
+  </div>
+  <div id="map-canvas"></div>
+</body>
+</html>
