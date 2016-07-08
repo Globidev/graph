@@ -67,7 +67,9 @@ static auto build_spatial_index(graph::Graph & graph) {
         it,
         end,
         std::back_inserter(coordinates),
-        [&](auto v) { return std::make_pair(coordinates_map[v], v); }
+        [&](auto v) {
+            return spatial::RTreeValue { coordinates_map[v], v };
+        }
     );
 
     // Using boost packing algorithm to bulk load the rtree
