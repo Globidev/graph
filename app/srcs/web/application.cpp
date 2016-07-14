@@ -53,11 +53,22 @@ static auto get_api(const graph::Graph & graph, const spatial::Index & index) {
     using namespace sl;
 
     auto home_r = (
-        GET = []() {
+        GET = [] {
             std::ifstream ifs { "html/index.html" };
             std::stringstream buffer;
             buffer << ifs.rdbuf();
             return buffer.str();
+        }
+    );
+
+    auto bounds_r = (
+        GET / _bounds = [&] {
+            auto bounds = index.bounds();
+
+            return D(
+                _minCorner = coordinate_object(bounds.min_corner()),
+                _maxCorner = coordinate_object(bounds.max_corner())
+            );
         }
     );
 
@@ -87,7 +98,8 @@ static auto get_api(const graph::Graph & graph, const spatial::Index & index) {
 
     return http_api(
         home_r,
-        route_r
+        route_r,
+        bounds_r
     );
 }
 
