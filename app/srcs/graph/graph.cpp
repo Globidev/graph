@@ -213,4 +213,73 @@ namespace graph {
         return boost::none;
     }
 
+    struct BirdDistanceHeuristic {
+
+        using CostType = decltype(bgeo::distance(
+            spatial::Coordinates {},
+            spatial::Coordinates {}
+        ));
+
+        BirdDistanceHeuristic(const Graph & graph,
+                              Graph::vertex_descriptor destination):
+            coordinates_ { bgl::get(coordinates_t { }, graph) },
+            d_coord_ { coordinates_[destination] }
+        { }
+
+        CostType operator()(Graph::vertex_descriptor vertex) {
+            return bgeo::distance(
+                coordinates_[vertex],
+                d_coord_
+            ) * spatial::EARTH_RADIUS;
+        }
+
+    private:
+
+        boost::property_map<Graph, coordinates_t>::const_type coordinates_;
+        spatial::Coordinates d_coord_;
+
+    };
+
+    Maybe<Route> get_route_a_star(Graph::vertex_descriptor origin_v,
+                                  Graph::vertex_descriptor destination_v,
+                                  const Graph & graph) {
+        using Distances = std::vector<double>;
+
+        Distances vertex_distances(bgl::num_vertices(graph));
+        Predecessors predecessors(bgl::num_vertices(graph));
+
+        auto vertex_indexes = bgl::get(boost::vertex_index, graph);
+        auto distance_map = boost::make_iterator_property_map(
+            vertex_distances.begin(),
+            vertex_indexes
+        );
+        auto predecessor_map = boost::make_iterator_property_map(
+            predecessors.begin(),
+            vertex_indexes
+        );
+
+        BirdDistanceHeuristic heuristic { graph, destination_v };
+
+        try {
+            bgl::astar_search(
+                graph,
+                origin_v,
+                heuristic,
+                bgl::predecessor_map(predecessor_map).
+                distance_map(distance_map).
+                visitor(
+                    bgl::make_astar_visitor(RouteVisitor { destination_v })
+                )
+            );
+        }
+        catch (const RouteVisitor::DestinationReached &) {
+            return Route {
+                vertex_distances[destination_v],
+                backtrack(predecessors, destination_v, graph)
+            };
+        }
+
+        return boost::none;
+    }
+
 }

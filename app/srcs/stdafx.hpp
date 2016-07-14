@@ -10,6 +10,7 @@ namespace po = boost::program_options;
 #include <boost/graph/adjacency_list.hpp>
 #include <boost/graph/adj_list_serialize.hpp>
 #include <boost/graph/dijkstra_shortest_paths.hpp>
+#include <boost/graph/astar_search.hpp>
 namespace bgl = boost;
 
 #include <boost/geometry.hpp>

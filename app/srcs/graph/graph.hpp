@@ -39,4 +39,8 @@ namespace graph {
     Maybe<Route> get_route(Graph::vertex_descriptor origin_v,
                            Graph::vertex_descriptor destination_v,
                            const Graph &);
+
+    Maybe<Route> get_route_a_star(Graph::vertex_descriptor origin_v,
+                                  Graph::vertex_descriptor destination_v,
+                                  const Graph &);
 }
