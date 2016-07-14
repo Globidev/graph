@@ -74,10 +74,11 @@ static auto get_api(const graph::Graph & graph, const spatial::Index & index) {
 
     auto route_params = get_parameters(
         _olat = double { }, _olng = double { },
-        _dlat = double { }, _dlng = double { }
+        _dlat = double { }, _dlng = double { },
+        _method = std::string { }
     );
     auto route_r = (
-        GET / _route * route_params = [&](auto p) {
+        GET / _route * route_params = [&](auto p, mhd_response* resp) {
             std::ostringstream oss;
             oss << "route from [" << p.olat << ", " << p.olng << "]"
                        << " to [" << p.dlat << ", " << p.dlng << "]";
@@ -86,7 +87,14 @@ static auto get_api(const graph::Graph & graph, const spatial::Index & index) {
             auto origin = nearest({ p.olng, p.olat }, index);
             auto destination = nearest({ p.dlng, p.dlat }, index);
 
-            auto route = graph::get_route(origin.id, destination.id, graph);
+            Maybe<graph::Route> route;
+            if (p.method == "astar")
+                route = graph::get_route_a_star(origin.id, destination.id, graph);
+            else if (p.method == "dijkstra")
+                route = graph::get_route(origin.id, destination.id, graph);
+            else {
+                resp->status = 400;
+            }
 
             return D(
                 _origin = coordinate_object(origin.coordinates),
